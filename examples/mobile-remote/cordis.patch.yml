@@ -1,0 +1,22 @@
+# Patch overlay: mount the mobile-remote plugin into the `web` profile.
+#
+# Usage (from a dsh repo checkout, dev launcher):
+#   dsh web --patch examples/mobile-remote/cordis.patch.yml
+#
+# A patch replaces a targeted row's WHOLE config. Here we only INSERT one new
+# row. If you also want LAN access (same Wi-Fi, no tunnel), replace the
+# `webserver` row's host with 0.0.0.0 and set the plugin's tunnel to 'none':
+#
+#   - id: webserver
+#     config:
+#       host: 0.0.0.0
+#       port: 3080
+
+- insert:
+    - id: mobile-remote
+      name: './src/index.ts'
+      config:
+        port: 3080
+        tunnel: cloudflared
+        cloudflaredPath: cloudflared
+        graceMs: 5000
