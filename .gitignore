@@ -1,0 +1,5 @@
+# Local harness source clone (1.5 GB) — not part of the tutorial repo
+/deepseek-harness/
+
+# OS noise
+.DS_Store
