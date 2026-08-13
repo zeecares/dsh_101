@@ -87,10 +87,25 @@ teach the plugin runtime.
 
 1. Install Tailscale on the Mac and the phone; both logged into the same
    tailnet (`tailscale status` shows every device and its `100.x.y.z` IP).
-2. Patch the webserver to listen on all interfaces so the tailnet interface is
-   reachable. Edit the profile's own `cordis.patch.yml`
-   (`~/.dsh/profiles/web/cordis.patch.yml`) — it hot-mounts via HMR, no
-   restart:
+2. **Recommended: use Tailscale Serve for HTTPS** (the web UI needs a *secure
+   context* — `crypto.randomUUID()` is a secure-context-only browser API, so
+   plain `http://<tailnet-ip>:3080` loads on the phone but the workspace/session
+   flow throws "crypto.randomUUID is not a function").
+   - One-time: enable **HTTPS certificates** in the Tailscale admin console
+     (`login.tailscale.com` → DNS → Enable HTTPS).
+   - Then proxy the harness over valid TLS, tailnet-only:
+
+     ```sh
+     tailscale serve --bg http://127.0.0.1:3080
+     # → https://<machine>.<tailnet>.ts.net/   (valid Let's Encrypt cert)
+     ```
+
+   - This also lets you revert the webserver patch to loopback-only (step 3
+     becomes unnecessary — Serve reaches the local port itself).
+3. If you prefer the raw-IP route instead: patch the webserver to listen on
+   all interfaces so the tailnet interface is reachable. Edit the profile's
+   own `cordis.patch.yml` (`~/.dsh/profiles/web/cordis.patch.yml`) — it
+   hot-mounts via HMR, no restart:
 
    ```yaml
    - id: webserver
@@ -99,13 +114,14 @@ teach the plugin runtime.
        port: 3080
    ```
 
-3. From the phone (Tailscale VPN on), browse to `http://<mac-tailnet-ip>:3080`
-   (`tailscale ip -4` on the Mac prints it).
+   then browse to `http://<mac-tailnet-ip>:3080` (viewing only — see the
+   secure-context caveat above).
 
 Caveats: binding `0.0.0.0` also exposes port 3080 to the local LAN (same
 Wi-Fi); the tailnet is the privacy boundary, so use a trusted network or the
 macOS firewall if that matters. The Mac must stay on, awake, online, and the
-harness process running.
+harness process running. `tailscale serve`'s config persists across reboots;
+the harness process itself does not auto-start.
 
 ## Layout
 
