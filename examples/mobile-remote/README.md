@@ -83,6 +83,30 @@ cloudflared tunnel --url http://127.0.0.1:3080
 Same public URL, no plugin — the plugin exists to make this turnkey and to
 teach the plugin runtime.
 
+### Private alternative: Tailscale (no plugin, no public exposure)
+
+1. Install Tailscale on the Mac and the phone; both logged into the same
+   tailnet (`tailscale status` shows every device and its `100.x.y.z` IP).
+2. Patch the webserver to listen on all interfaces so the tailnet interface is
+   reachable. Edit the profile's own `cordis.patch.yml`
+   (`~/.dsh/profiles/web/cordis.patch.yml`) — it hot-mounts via HMR, no
+   restart:
+
+   ```yaml
+   - id: webserver
+     config:
+       host: 0.0.0.0
+       port: 3080
+   ```
+
+3. From the phone (Tailscale VPN on), browse to `http://<mac-tailnet-ip>:3080`
+   (`tailscale ip -4` on the Mac prints it).
+
+Caveats: binding `0.0.0.0` also exposes port 3080 to the local LAN (same
+Wi-Fi); the tailnet is the privacy boundary, so use a trusted network or the
+macOS firewall if that matters. The Mac must stay on, awake, online, and the
+harness process running.
+
 ## Layout
 
 ```
