@@ -102,6 +102,28 @@ teach the plugin runtime.
 
    - This also lets you revert the webserver patch to loopback-only (step 3
      becomes unnecessary — Serve reaches the local port itself).
+4. **Declare the serving authority to the `/api` trust fence.** Every `/api`
+   request is gated by a DNS-rebinding fence (`isTrustedApiRequest` in
+   `packages/client/connection/src/api-request-trust.ts`): the `Host` must be
+   loopback or a declared `trustedHosts` authority, else **HTTP 403** (that's
+   the "transport failure for /api/host.listDirectory" on the phone). Add the
+   `ts.net` hostname to the `connection` row in the profile's `cordis.patch.yml`
+   (hot-mounts via HMR):
+
+   ```yaml
+   - id: connection
+     config:
+       trustedHosts:
+         - <machine>.<tailnet>.ts.net
+   ```
+
+   Two real-world notes: (a) use the static list form — the *packaged* npm
+   build's overlay parser rejects the `!!js` tag even though the repo docs and
+   the profile template mention it; (b) some methods stay loopback-pinned even
+   with `trustedHosts` (`host.pickDirectory` opens the host's native dialog),
+   so the native-picker button may still 403 from a remote browser — use the
+   in-UI directory browser / typed path, or add the workspace from the desktop
+   session.
 3. If you prefer the raw-IP route instead: patch the webserver to listen on
    all interfaces so the tailnet interface is reachable. Edit the profile's
    own `cordis.patch.yml` (`~/.dsh/profiles/web/cordis.patch.yml`) — it
