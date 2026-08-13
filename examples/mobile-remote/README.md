@@ -42,21 +42,46 @@ cordis.patch.yml  ──inserts row──▶  mobile-remote  ──inject──�
 ## Run it
 
 Requires `cloudflared` on PATH
-([download](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/)).
+([download](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/)),
+and a running dsh web profile (your harness is at `http://127.0.0.1:3080`).
+
+**0. Fix the name (one-time, per machine).** Plugin names in patch overlays
+resolve against the **profile directory** (`$DSH_HOME/profiles/<name>/`), not
+against the patch file — so open `cordis.patch.yml` and replace
+`/REPLACE/WITH/ABSOLUTE/PATH/...` with the absolute path to this directory's
+`src/index.ts`. (Alternatively drop this `src/index.ts` file into
+`~/.dsh/profiles/web/` and use `name: './src/index.ts'`; or publish it as an
+npm package and use its name.)
+
+**1. Boot with the patch** (from a dsh repo checkout, dev launcher):
 
 ```sh
-# from a dsh repo checkout (dev launcher)
 dsh web --patch examples/mobile-remote/cordis.patch.yml
 ```
 
-Expected log line:
+**2. Watch the log** for the phone URL:
 
 ```
 mobile-remote: phone URL: https://<random>.trycloudflare.com
 ```
 
-Open that URL on your phone. `curl https://<random>.trycloudflare.com/mobile-remote`
-returns the live status JSON.
+**3. Open it on your phone.** `curl https://<random>.trycloudflare.com/mobile-remote`
+returns `{ "status": "up", "localUrl": ..., "publicUrl": ... }`.
+
+### Already running? Hot-mount it without a restart
+
+The web profile's own `cordis.patch.yml` (`~/.dsh/profiles/web/cordis.patch.yml`)
+is watched by the harness (HMR): add the same row there with an absolute
+`name:`, and the running process mounts the plugin live — no restart.
+
+### Zero-plugin alternative (works with any running harness)
+
+```sh
+cloudflared tunnel --url http://127.0.0.1:3080
+```
+
+Same public URL, no plugin — the plugin exists to make this turnkey and to
+teach the plugin runtime.
 
 ## Layout
 

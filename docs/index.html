@@ -1441,10 +1441,20 @@ row (<code>examples/mobile-remote/cordis.patch.yml</code>):</p>
 <div class="sourceCode" id="cb14"><pre
 class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="kw">-</span><span class="at"> </span><span class="fu">insert</span><span class="kw">:</span></span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> </span><span class="fu">id</span><span class="kw">:</span><span class="at"> mobile-remote</span></span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">name</span><span class="kw">:</span><span class="at"> </span><span class="st">&#39;./src/index.ts&#39;</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">name</span><span class="kw">:</span><span class="at"> </span><span class="st">&#39;/absolute/path/to/examples/mobile-remote/src/index.ts&#39;</span></span>
 <span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">config</span><span class="kw">:</span></span>
 <span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">port</span><span class="kw">:</span><span class="at"> </span><span class="dv">3080</span></span>
 <span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">tunnel</span><span class="kw">:</span><span class="at"> cloudflared</span></span></code></pre></div>
+<p>One subtle kernel fact, verified from the harness source: a
+<code>--patch</code> overlay’s <code>name</code> resolves against the
+<strong>profile’s</strong> config directory
+(<code>$DSH_HOME/profiles/&lt;name&gt;/</code>), not against the patch
+file — so local plugins use an <strong>absolute path</strong> (absolute
+names become file URLs), or a package name once published, or a
+<code>./</code> path if the file sits in the profile dir. That asymmetry
+is exactly the kind of thing you learn by reading
+<code>mountRootInclude</code> in
+<code>packages/boot/app-boot/</code>.</p>
 <p>Run it:</p>
 <div class="sourceCode" id="cb15"><pre
 class="sourceCode sh"><code class="sourceCode bash"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="ex">dsh</span> web <span class="at">--patch</span> examples/mobile-remote/cordis.patch.yml</span>

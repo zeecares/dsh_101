@@ -3,18 +3,29 @@
 # Usage (from a dsh repo checkout, dev launcher):
 #   dsh web --patch examples/mobile-remote/cordis.patch.yml
 #
-# A patch replaces a targeted row's WHOLE config. Here we only INSERT one new
-# row. If you also want LAN access (same Wi-Fi, no tunnel), replace the
-# `webserver` row's host with 0.0.0.0 and set the plugin's tunnel to 'none':
+# ── How plugin `name:` resolves (verified against the harness source) ─────
+# The boot include's config file is the PROFILE's cordis.yml
+# ($DSH_HOME/profiles/<name>/cordis.yml), and RELATIVE names in any patch
+# layer resolve against THAT directory — not against this patch file, not
+# against your cwd. Three forms work:
 #
-#   - id: webserver
-#     config:
-#       host: 0.0.0.0
-#       port: 3080
+#   1. ABSOLUTE path   → name: '/Users/you/.../src/index.ts'   (works anywhere)
+#   2. RELATIVE path   → name: './src/index.ts'   only if the file sits in
+#                        the profile dir ($DSH_HOME/profiles/<name>/)
+#   3. PACKAGE name    → name: '@you/dsh-mobile-remote'  (npm/workspace
+#                        resolution; this is how shipped plugins mount)
+#
+# The `name` below is a placeholder you MUST replace with an absolute path to
+# this directory, e.g.:
+#   name: '/Users/ziyiwang/learn_dhs/examples/mobile-remote/src/index.ts'
+#
+# A patch replaces a targeted row's WHOLE config. Here we only INSERT one new
+# row. For LAN access instead of a tunnel, also replace the `webserver` row's
+# host with 0.0.0.0 and set tunnel: none.
 
 - insert:
     - id: mobile-remote
-      name: './src/index.ts'
+      name: '/REPLACE/WITH/ABSOLUTE/PATH/examples/mobile-remote/src/index.ts'
       config:
         port: 3080
         tunnel: cloudflared

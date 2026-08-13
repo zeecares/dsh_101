@@ -74,14 +74,17 @@ export function apply(ctx: Context, config: Config) {
         cwd: process.cwd(),
         stdio: {
           stdin: 'ignore',
+          // stdout: collect-mode — bounded in-memory tail, no backpressure.
           stdout: { maxBytes: 64 * 1024 },
-          stderr: { maxBytes: 64 * 1024 },
+          // stderr: pipe-mode — we consume the raw stream to find the URL.
+          stderr: 'pipe',
         },
         graceMs: config.graceMs,
       })
 
-      // cloudflared prints the published URL on stderr. The collect mode keeps
-      // a bounded tail; on 'data' we just scan raw chunks for the URL.
+      // cloudflared prints the published URL on stderr. The raw stream is
+      // consumed here (which also prevents pipe backpressure from stalling
+      // the child); the regex matches `https://<random>.trycloudflare.com`.
       handle.stderr?.on('data', (chunk: Buffer) => {
         const match = urlPattern.exec(chunk.toString())
         if (match && !publicUrl) {

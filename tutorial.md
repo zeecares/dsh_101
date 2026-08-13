@@ -598,11 +598,13 @@ Every line maps to Part 3's contract: receives `ctx` (never imports services), r
 ```yaml
 - insert:
     - id: mobile-remote
-      name: './src/index.ts'
+      name: '/absolute/path/to/examples/mobile-remote/src/index.ts'
       config:
         port: 3080
         tunnel: cloudflared
 ```
+
+One subtle kernel fact, verified from the harness source: a `--patch` overlay's `name` resolves against the **profile's** config directory (`$DSH_HOME/profiles/<name>/`), not against the patch file — so local plugins use an **absolute path** (absolute names become file URLs), or a package name once published, or a `./` path if the file sits in the profile dir. That asymmetry is exactly the kind of thing you learn by reading `mountRootInclude` in `packages/boot/app-boot/`.
 
 Run it:
 
